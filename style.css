@@ -1,0 +1,68 @@
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --text:#222; --muted:#6b7280;
+  --brand:#b9151b; --brand-600:#981217; --line:#e5e7eb; --ok:#11a36a; --warn:#ef4444;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Arial, "Noto Sans", sans-serif;
+     color:var(--text); background:var(--bg); line-height:1.6}
+a{color:var(--brand); text-decoration:none}
+.container{max-width:1100px; margin:0 auto; padding:0 16px}
+.row{display:flex; gap:8px} .center{align-items:center} .between{justify-content:space-between}
+.g12{gap:12px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:20px}
+.section{padding:64px 0}
+.accent{background:linear-gradient(180deg,#fff, #fff5f5)}
+
+.header{position:sticky; top:0; z-index:30; background:#fff; box-shadow:0 1px 0 var(--line)}
+.header .logo{width:42px; height:42px; border-radius:50%}
+.header .brand{display:flex; flex-direction:column; font-size:12px; color:var(--muted)}
+.nav a{padding:14px 10px; color:#374151; border-bottom:2px solid transparent}
+.nav a:hover{border-color:var(--brand)}
+
+.hero{padding:72px 0 40px; text-align:center; background: radial-gradient(1200px 400px at 50% -50%, #ffecec, transparent)}
+.hero h1{font-size:32px; margin:0 0 8px}
+.lead{font-size:18px; color:#374151; margin:0 0 18px}
+.ticks{list-style:none; padding:0; margin:18px auto; max-width:680px; text-align:left}
+.ticks li{position:relative; padding-left:28px; margin:8px 0}
+.ticks li:before{content:"✔"; position:absolute; left:0; top:0; color:var(--ok); font-weight:bold}
+.note{color:var(--muted); font-size:13px}
+
+.card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:0 6px 20px rgba(0,0,0,.04)}
+.card.warn{background:#fff5f5; border-color:#fde2e2}
+.card h3{margin-top:0}
+.list-num{padding-left:20px}
+.bullets{padding-left:18px}
+.muted{color:var(--muted); font-size:14px}
+
+.table-wrap{overflow:auto}
+.table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+.table th, .table td{padding:12px 14px; border-bottom:1px solid var(--line); text-align:left}
+.table thead th{background:#fafafa; font-weight:600}
+.table td:nth-child(2){color:var(--ok); font-weight:600}
+.table td:nth-child(n+3){color:#b91c1c; font-weight:600}
+
+.price{font-weight:700}
+.btn{display:inline-block; padding:12px 18px; border-radius:10px; border:1px solid var(--brand);
+     transition:.2s transform ease, .2s background-color ease, .2s color ease; cursor:pointer; user-select:none}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--brand); color:#fff}
+.btn-primary:hover{background:var(--brand-600)}
+.btn-ghost{background:#fff; color:var(--brand); border-color:var(--brand)}
+.input{width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; margin:8px 0}
+
+.footer{padding:22px 0; background:#111827; color:#e5e7eb}
+.footer .logo-sm{width:28px; height:28px; border-radius:50%; margin-right:8px}
+
+/* Плавное появление секций (микроанимации) */
+.reveal{opacity:0; transform:translateY(10px); transition:opacity .6s ease, transform .6s ease}
+.reveal.show{opacity:1; transform:none}
+.delay1{transition-delay:.08s} .delay2{transition-delay:.16s} .delay3{transition-delay:.24s}
+
+/* Адаптив */
+@media (max-width: 900px){
+  .grid3{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .nav a{padding:12px 8px}
+}
