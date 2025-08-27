@@ -1,12 +1,177 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ГИАТЕРРА — Коммерческое предложение</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ГИАТЕРРА — ИИ-сервис для юристов</title>
+  <meta name="description" content="Первый ИИ-сервис для юристов в России: безопасность 152-ФЗ, российский сервер, ежедневные обновления, работа с файлами и аудио. 14 дней бесплатно.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ГИАТЕРРА — ИИ-сервис для юристов">
+  <meta property="og:description" content="Автоматизируйте до 80% рутины и ускоряйте работу с документами в 3 раза. 14 дней бесплатно.">
+  <meta property="og:image" content="logo.png">
+  <link rel="icon" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+  <div class="container row between center">
+    <div class="row center g12">
+      <img src="logo.png" alt="ГИАТЕРРА" class="logo">
+      <div class="brand">
+        <strong>ГИАТЕРРА</strong>
+        <span>Порядок создаёт возможности</span>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="#about">О сервисе</a>
+      <a href="#compare">Сравнение</a>
+      <a href="#pricing">Тарифы</a>
+      <a href="#offer">Спецпредложение</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="reveal">ПЕРВЫЙ ИИ-СЕРВИС ДЛЯ ЮРИСТОВ В РОССИИ</h1>
+      <p class="lead reveal delay1">Безопасно • Актуально • Без VPN</p>
+      <div class="cta row g12 reveal delay2">
+        <a class="btn btn-primary" href="#offer">Попробовать бесплатно</a>
+        <a class="btn btn-ghost" href="#pricing">Посмотреть тарифы</a>
+      </div>
+      <ul class="ticks reveal delay3">
+        <li>Российский сервер</li>
+        <li>Конфиденциальность персональных данных</li>
+        <li>Ежедневные обновления законодательства*</li>
+        <li>Работа с файлами и аудио*</li>
+      </ul>
+      <p class="note reveal delay3">* Функции доступны на соответствующих тарифах</p>
+    </div>
+  </section>
+
+  <!-- О СЕРВИСЕ / 152-ФЗ -->
+  <section id="about" class="section">
+    <div class="container grid2">
+      <div class="card reveal">
+        <h2>Наш сервис полностью соответствует 152-ФЗ</h2>
+        <ol class="list-num">
+          <li><strong>Безопасность и конфиденциальность.</strong> Встроенный анонимайзер: персональные данные удаляются до отправки на сервер. Работа напрямую в РФ, без VPN.</li>
+          <li><strong>Актуальность и точность.</strong> Российский сервер; ежедневные обновления; учёт свежей практики. Зарубежные ИИ часто используют устаревшие базы.</li>
+          <li><strong>Функциональность для работы с клиентами.</strong> Неограниченное число чатов для разных дел, совместная работа с помощниками.</li>
+          <li><strong>Инструменты юриста.</strong> Запись/расшифровка аудио; прикрепление и анализ документов (иски, договоры, судебные акты); быстрый поиск по истории.</li>
+        </ol>
+      </div>
+      <div class="card warn reveal delay1">
+        <h3>Важно знать каждому</h3>
+        <p>Использование зарубежных ИИ (ChatGPT, DeepSeek и др.) = <strong>риск нарушения 152-ФЗ и адвокатской тайны</strong>.</p>
+        <ul class="bullets">
+          <li>Данные проходят через иностранные сервера.</li>
+          <li>Нет анонимайзера — документы сохраняются и анализируются.</li>
+          <li>Утечка ПД клиента — штраф до 500 000 ₽ и дисциплинарная ответственность вплоть до лишения статуса адвоката.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- СРАВНЕНИЕ -->
+  <section id="compare" class="section">
+    <div class="container">
+      <h2 class="reveal">Сравнение с другими</h2>
+      <div class="table-wrap reveal delay1">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Функция</th>
+              <th>Наш сервис</th>
+              <th>ChatGPT</th>
+              <th>DeepSeek</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Российский сервер</td><td>✔</td><td>✖</td><td>✖</td></tr>
+            <tr><td>Ежедневные обновления</td><td>✔</td><td>✖</td><td>✖</td></tr>
+            <tr><td>Специализация под юристов</td><td>✔</td><td>◯</td><td>◯</td></tr>
+            <tr><td>Анонимайзер персональных данных</td><td>✔</td><td>✖</td><td>✖</td></tr>
+            <tr><td>Работа с файлами и аудио</td><td>✔</td><td>◯</td><td>◯</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ТАРИФЫ -->
+  <section id="pricing" class="section">
+    <div class="container">
+      <h2 class="reveal">Тарифные планы</h2>
+      <div class="grid3">
+        <article class="card reveal delay1">
+          <h3>Полный пакет «Профи»</h3>
+          <p><strong>Регистрация:</strong> <span class="price">59 000 ₽</span> <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p><strong>Годовая подписка (от 20 профилей):</strong> <span class="price">620 000 ₽</span> <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p class="muted">Оптимально для крупных юрфирм с постоянной поддержкой.</p>
+        </article>
+        <article class="card reveal delay2">
+          <h3>Гибкий тариф «Бизнес»</h3>
+          <p><strong>Регистрация:</strong> <span class="price">180 000 ₽</span> <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p><strong>Ежемесячно:</strong> <span class="price">3 000 ₽</span> за активного пользователя <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p class="muted">Для компаний, где важна гибкость и масштабируемость.</p>
+        </article>
+        <article class="card reveal delay3">
+          <h3>Базовый вариант «Стандарт»</h3>
+          <p><strong>Регистрация:</strong> <span class="price">59 000 ₽</span> <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p><strong>Ежегодное продление:</strong> <span class="price">56 000 ₽</span> за 1 профиль <!-- ИЗМЕНИ ЦЕНУ --></p>
+          <p class="muted">Для индивидуальных юристов и небольших фирм.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- СПЕЦПРЕДЛОЖЕНИЕ -->
+  <section id="offer" class="section accent">
+    <div class="container">
+      <h2 class="reveal">Специальное предложение</h2>
+      <p class="lead reveal delay1">14-дневный бесплатный тест + персональный onboarding при заключении договора до <strong>30 сентября</strong>.</p>
+      <div class="cta row g12 reveal delay2">
+        <a class="btn btn-primary" href="mailto:giaterra.rf@gmail.com?subject=Заявка%20на%20тест&body=Имя%3A%0AКомпания%3A%0AТелефон%3A">Оставить заявку по email</a>
+        <a class="btn btn-ghost" href="tel:+79273333329">Позвонить +7 (927) 333-33-29</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- КОНТАКТЫ -->
+  <section id="contacts" class="section">
+    <div class="container grid2">
+      <div class="card reveal">
+        <h2>Свяжитесь с нами</h2>
+        <p><strong>Телефон:</strong> <a href="tel:+79273333329">+7 (927) 333-33-29</a></p>
+        <p><strong>Email:</strong> <a href="mailto:giaterra.rf@gmail.com">giaterra.rf@gmail.com</a></p>
+        <p class="muted">С уважением, <br>Гончаров Игорь — коммерческий директор ООО «ГИАТЕРРА»</p>
+      </div>
+      <form class="card reveal delay1" action="mailto:giaterra.rf@gmail.com" method="post" enctype="text/plain">
+        <h3>Быстрая заявка (через почту)</h3>
+        <input class="input" name="Имя" placeholder="Ваше имя" required>
+        <input class="input" name="Email" type="email" placeholder="Ваш email" required>
+        <textarea class="input" name="Сообщение" rows="4" placeholder="Коротко опишите задачу"></textarea>
+        <button class="btn btn-primary" type="submit">Отправить</button>
+        <p class="muted">Для полноценной формы можем подключить Formspree/Яндекс.Формы — скажи, подключу.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container row between center">
+    <div class="row center g12">
+      <img src="logo.png" class="logo-sm" alt="">
+      <span>© ООО «ГИАТЕРРА»</span>
+    </div>
+    <p class="muted">P.S. По статистике, клиенты окупают подписку за 2–3 месяца работы.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
 </html>
