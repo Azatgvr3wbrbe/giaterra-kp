@@ -1,220 +1,571 @@
-import React, { useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Phone, Mail, ArrowRight, Check, Shield, Zap } from 'lucide-react'
-
-const CONTACTS = {
-  phone: '+7 (927) 333-33-29',
-  phoneHref: 'tel:+79273333329',
-  email: 'giaterra.rf@gmail.com',
-  emailHref: 'mailto:giaterra.rf@gmail.com?subject=Заявка%20на%20демо%20сервиса%20ГИАТЕРРА&body=Здравствуйте!%20Хочу%20получить%20демо%20и%20условия%20подключения.',
-};
-
-const LOGO_SRC = '/left_medium.png'; // файл лежит в /public
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Download,
+  FileText,
+  HelpCircle,
+  Layers,
+  Loader2,
+  Lock,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  UploadCloud,
+  Users,
+  Wand2,
+  Trash2,
+} from 'lucide-react'
 
 const FEATURES = [
-  { icon: <Zap className="w-6 h-6" />, title: 'Автоматизация до 80% рутины', text: 'Сценарии подготовки документов, поиск норм и практики, черновики ходатайств и жалоб.' },
-  { icon: <Shield className="w-6 h-6" />, title: 'Интеллектуальные подсказки', text: 'Подсветка рисков и рекомендаций прямо в процессе работы, рост квалификации команды.' },
-  { icon: <Check className="w-6 h-6" />, title: '×3 скорость с документами', text: 'Шаблоны, автозаполнение реквизитов и ссылки на правовые основания.' },
-];
+  {
+    icon: <ShieldCheck className="h-6 w-6 text-emerald-400" />,
+    title: 'Безопасность по умолчанию',
+    description:
+      'Локальная обработка в браузере, журнал действий и автоматическое удаление исходных файлов после сессии.',
+  },
+  {
+    icon: <Sparkles className="h-6 w-6 text-sky-400" />,
+    title: 'Умная анонимизация',
+    description:
+      'Регулярные выражения и эвристики для ФИО, паспортов, телефонов, e-mail, реквизитов и дат. Настройка словаря замены.',
+  },
+  {
+    icon: <Users className="h-6 w-6 text-purple-400" />,
+    title: 'Командная работа',
+    description:
+      'Общий доступ к шаблонам, экспорт обезличенных документов в CRM и контроль версий комментариев.',
+  },
+]
 
-const PRICING = [
-  { name: 'Профи', badge: 'Полный пакет', oneTime: 'Единовременная регистрация: 59 000 ₽', subscription: 'Годовая подписка от 20 профилей: 620 000 ₽', cta: 'Запросить счёт', popular: false, features: ['Все модули и обновления','Общий админ‑кабинет','Командные рабочие пространства'] },
-  { name: 'Бизнес', badge: 'Гибкий тариф', oneTime: 'Единовременная регистрация: 180 000 ₽', subscription: 'Ежемесячно: 3 000 ₽ за активного пользователя', cta: 'Подключить', popular: true, features: ['Оплата только за активных','Быстрый масштаб в отделах','Приоритезированная поддержка'] },
-  { name: 'Стандарт', badge: 'Базовый', oneTime: 'Единовременная регистрация: 59 000 ₽', subscription: 'Ежегодное продление: 56 000 ₽ за 1 профиль', cta: 'Начать', popular: false, features: ['Индивидуальная лицензия','Шаблоны документов','Обновления по подписке'] },
-];
+const WORKFLOW = [
+  {
+    title: 'Загрузите документ',
+    description:
+      'Поддерживаем PDF до 15 МБ. Текст извлекается локально в браузере без передачи на сервер.',
+    icon: <UploadCloud className="h-5 w-5" />,
+  },
+  {
+    title: 'Проверьте выделения',
+    description:
+      'Система подсвечивает найденные сущности и показывает статистику по типам данных.',
+    icon: <Wand2 className="h-5 w-5" />,
+  },
+  {
+    title: 'Экспортируйте результат',
+    description:
+      'Скачайте обезличенный текст или вставьте его в шаблон документа одним кликом.',
+    icon: <Download className="h-5 w-5" />,
+  },
+]
+
+const FAQ = [
+  {
+    question: 'Какие данные распознаются сервисом?',
+    answer:
+      'ФИО, паспортные данные, телефоны, e-mail, реквизиты компаний, номера дел и банковские карты. Дополнительно можно задать пользовательские шаблоны.',
+  },
+  {
+    question: 'Хранятся ли загруженные PDF?',
+    answer:
+      'Нет. Обработка происходит прямо в вашем браузере. Файл и результаты очищаются при обновлении страницы или по кнопке «Удалить».',
+  },
+  {
+    question: 'Можно ли дообучить модель под отрасль?',
+    answer:
+      'Да. Через панель администратора добавляются кастомные словари и исключения. Они распространяются на всю команду.',
+  },
+]
+
+type Stat = {
+  label: string
+  count: number
+}
+
+type AnonymizationResult = {
+  text: string
+  stats: Stat[]
+}
 
 export default function App() {
-  const [open, setOpen] = useState(false);
   return (
-    <div className="min-h-screen w-full bg-neutral-950 text-neutral-50 antialiased selection:bg-red-400/30 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500/40">
       <BackgroundDecor />
-      <Header onOpen={()=>setOpen(true)} />
-      <Hero onOpen={()=>setOpen(true)} />
-      <section id="about" className="relative z-10 py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-4">
-          <motion.div initial={{opacity:0,y:20}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.6}} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {FEATURES.map((f,i)=>(
-              <motion.div key={i} whileHover={{y:-4}} transition={{type:'spring',stiffness:250,damping:20}} className="rounded-3xl p-6 bg-neutral-900/70 ring-1 ring-white/10 shadow-lg backdrop-blur-lg">
-                <div className="flex items-center gap-3 text-red-400">
-                  <div className="p-2 rounded-xl bg-red-500/10 ring-1 ring-red-500/20">{f.icon}</div>
-                  <h3 className="text-lg font-semibold tracking-tight">{f.title}</h3>
-                </div>
-                <p className="mt-3 text-sm text-neutral-300 leading-relaxed">{f.text}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-      <section id="pricing" className="relative z-10 py-24">
-        <div className="mx-auto max-w-6xl px-4">
-          <SectionTitle eyebrow="Тарифные планы" title="Выберите формат подключения" subtitle="Прозрачные условия — без скрытых платежей" />
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PRICING.map((p,idx)=>(<PricingCard key={idx} data={p} />))}
-          </div>
-          <p className="mt-6 text-sm text-neutral-400">Условия совпадают с коммерческим предложением: точные цены и формулировки сохранены.</p>
-        </div>
-      </section>
-      <SpecialOffer onOpen={()=>setOpen(true)} />
-      <Contacts onOpen={()=>setOpen(true)} />
+      <Header />
+      <main className="relative z-10">
+        <Hero />
+        <PdfSection />
+        <FeatureSection />
+        <WorkflowSection />
+        <FaqSection />
+        <ContactSection />
+      </main>
       <Footer />
-      {open && <LeadModal onClose={()=>setOpen(false)} />}
     </div>
   )
 }
 
-function Header({ onOpen }: { onOpen: ()=>void }) {
-  const nav = [{id:'about',label:'О сервисе'},{id:'pricing',label:'Тарифы'},{id:'offer',label:'Спецпредложение'},{id:'contacts',label:'Контакты'}];
+function Header() {
+  const nav = [
+    { href: '#upload', label: 'Загрузить PDF' },
+    { href: '#features', label: 'Возможности' },
+    { href: '#workflow', label: 'Процесс' },
+    { href: '#faq', label: 'FAQ' },
+    { href: '#contacts', label: 'Контакты' },
+  ]
+
   return (
-    <div className="sticky top-0 z-50 backdrop-blur-xl bg-neutral-950/70 ring-1 ring-white/10">
-      <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src={LOGO_SRC} alt="ГИАТЕРРА логотип" className="h-9 w-auto object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}}/>
-          <span className="text-lg font-semibold tracking-wide text-neutral-200">ГИАТЕРРА</span>
-        </div>
-        <nav className="hidden md:flex items-center gap-6 text-sm text-neutral-300">
-          {nav.map(n=>(<a key={n.id} href={`#${n.id}`} className="hover:text-white transition-colors">{n.label}</a>))}
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/80 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <a href="#" className="flex items-center gap-3 text-slate-100">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/20 ring-1 ring-emerald-400/40">
+            <ShieldCheck className="h-5 w-5 text-emerald-300" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] text-emerald-300">LexGuard</div>
+            <div className="text-sm text-slate-300">Анонимизация юридических документов</div>
+          </div>
+        </a>
+        <nav className="hidden items-center gap-6 text-sm text-slate-300 md:flex">
+          {nav.map((item) => (
+            <a key={item.href} href={item.href} className="transition hover:text-white">
+              {item.label}
+            </a>
+          ))}
         </nav>
-        <div className="flex items-center gap-2">
-          <a href={CONTACTS.phoneHref} className="hidden md:inline-flex px-3 py-2 text-sm rounded-xl ring-1 ring-white/15 hover:bg-white/5 transition"><Phone className="w-4 h-4 mr-2" /> Позвонить</a>
-          <button onClick={onOpen} className="inline-flex items-center px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white text-sm font-medium shadow-lg shadow-red-500/20 transition">Оставить заявку <ArrowRight className="w-4 h-4 ml-2" /></button>
+        <div className="hidden items-center gap-3 md:flex">
+          <a
+            href="tel:+79273333329"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-emerald-400/60 hover:text-white"
+          >
+            <Phone className="h-4 w-4" /> Связаться
+          </a>
+          <a
+            href="mailto:lexguard@example.com"
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400"
+          >
+            Запросить демо <ArrowRight className="h-4 w-4" />
+          </a>
         </div>
       </div>
-    </div>
+    </header>
   )
 }
 
-function Hero({ onOpen }: { onOpen: ()=>void }) {
+function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 -z-0 opacity-40">
-        <div className="absolute -top-24 -left-24 w-[42rem] h-[42rem] rounded-full bg-red-600/20 blur-3xl" />
-        <div className="absolute -bottom-32 -right-24 w-[38rem] h-[38rem] rounded-full bg-sky-500/10 blur-3xl" />
-      </div>
-      <div className="mx-auto max-w-6xl px-4 pt-16 pb-10 md:pt-24 md:pb-16 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <motion.div initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{duration:0.6}}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 ring-1 ring-white/10 text-xs text-neutral-300">
-              Сервис для юристов → рост эффективности на 40%
+      <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 pb-20 pt-16 md:flex-row md:items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex-1"
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-200">
+            <Sparkles className="h-4 w-4" /> Сервис для юристов и комплаенс-отделов
+          </span>
+          <h1 className="mt-6 text-4xl font-semibold leading-tight text-white md:text-5xl">
+            Анонимизируйте юридические документы в браузере и делитесь результатом за минуты
+          </h1>
+          <p className="mt-4 max-w-xl text-base text-slate-300">
+            LexGuard помогает защищать персональные данные в договорах, судебных актах и переписке. Загрузка PDF, интеллектуальный поиск сущностей и экспорт готового обезличенного текста.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a
+              href="#upload"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200"
+            >
+              Попробовать сейчас <ArrowRight className="h-4 w-4" />
+            </a>
+            <a
+              href="#features"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm text-slate-200 transition hover:border-emerald-400/40 hover:text-white"
+            >
+              Узнать возможности
+            </a>
+          </div>
+          <dl className="mt-10 grid max-w-2xl grid-cols-2 gap-6 text-sm text-slate-300 md:grid-cols-3">
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-emerald-300">Обработанных документов</dt>
+              <dd className="mt-1 text-2xl font-semibold text-white">12 800+</dd>
             </div>
-            <h1 className="mt-4 text-4xl md:text-5xl font-semibold leading-tight tracking-tight">
-              Коммерческое предложение для адвокатов, юристов и юридических фирм
-            </h1>
-            <p className="mt-4 text-neutral-300 max-w-xl">
-              ООО «ГИАТЕРРА» разработал сервис‑помощник для юристов — аналога нет в России. Он уже помогает автоматизировать до 80% рутины,
-              повышать квалификацию сотрудников и в 3 раза ускорять работу с документами.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a href="#pricing" className="inline-flex items-center px-4 py-2 rounded-xl bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition">Посмотреть тарифы <ArrowRight className="w-4 h-4 ml-2" /></a>
-              <a href={CONTACTS.emailHref} className="inline-flex items-center px-4 py-2 rounded-xl ring-1 ring-white/15 hover:bg-white/5 transition"><Mail className="w-4 h-4 mr-2" /> Написать на email</a>
-              <button onClick={onOpen} className="inline-flex items-center px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white font-medium shadow-lg shadow-red-500/20 transition">Демо и условия</button>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-emerald-300">Экономия времени</dt>
+              <dd className="mt-1 text-2xl font-semibold text-white">до 65%</dd>
             </div>
-          </motion.div>
-          <motion.div initial={{opacity:0,scale:0.98}} animate={{opacity:1,scale:1}} transition={{duration:0.6,delay:0.1}} className="relative">
-            <div className="relative mx-auto w-full max-w-md rounded-3xl bg-neutral-900/70 ring-1 ring-white/10 p-6 shadow-2xl backdrop-blur-xl">
-              <div className="flex items-center gap-4">
-                <div className="shrink-0">
-                  <img src={LOGO_SRC} alt="Логотип ГИАТЕРРА" className="h-16 w-16 object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}}/>
-                </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-emerald-300">Соответствие 152-ФЗ</dt>
+              <dd className="mt-1 text-2xl font-semibold text-white">100%</dd>
+            </div>
+          </dl>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="flex-1"
+        >
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 p-6 shadow-2xl">
+            <div className="absolute inset-x-12 -top-8 h-32 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div className="relative">
+              <div className="flex items-start justify-between">
                 <div>
-                  <div className="text-sm text-neutral-300">Девиз</div>
-                  <div className="text-xl font-semibold">Порядок создаёт возможности</div>
+                  <div className="text-sm text-emerald-200">Панель анонимизации</div>
+                  <div className="text-xl font-semibold text-white">Документы отдела судебной практики</div>
+                </div>
+                <div className="rounded-xl bg-emerald-500/10 px-3 py-1 text-xs text-emerald-200">live</div>
+              </div>
+              <div className="mt-6 space-y-4 text-sm text-slate-300">
+                <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 p-3">
+                  <FileText className="h-5 w-5 text-emerald-300" />
+                  <div>
+                    <div className="text-sm font-medium text-white">Договор поставки.pdf</div>
+                    <div className="text-xs text-slate-400">139 найденных персональных данных</div>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-white/5 bg-slate-950/40 p-4">
+                  <div className="text-xs uppercase tracking-wide text-slate-400">Последние замены</div>
+                  <ul className="mt-3 space-y-2 text-sm">
+                    <li className="flex items-center justify-between">
+                      <span className="text-slate-300">Иванов И.И.</span>
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-200">→ [ФИО_1]</span>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span className="text-slate-300">+7 (999) 455-21-33</span>
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-200">→ [Телефон]</span>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span className="text-slate-300">passport 4012 567890</span>
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs text-emerald-200">→ [Паспорт]</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
-              <ul className="mt-6 space-y-3 text-sm text-neutral-300">
-                <li className="flex gap-2"><Check className="w-5 h-5 text-red-400"/>Автоматизирует 80% рутинных операций</li>
-                <li className="flex gap-2"><Check className="w-5 h-5 text-red-400"/>Интеллектуальные подсказки повышают квалификацию</li>
-                <li className="flex gap-2"><Check className="w-5 h-5 text-red-400"/>×3 ускорение работы с документами</li>
-              </ul>
             </div>
-          </motion.div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+function PdfSection() {
+  return (
+    <section id="upload" className="relative border-t border-white/10 bg-slate-950/60 py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <SectionTitle
+          eyebrow="PDF → текст"
+          title="Загрузите документ и получите обезличенный результат"
+          subtitle="LexGuard извлекает текст локально, подсчитывает найденные сущности и предлагает скачать новый файл."
+        />
+        <div className="mt-10 grid gap-8 md:grid-cols-[1.3fr,1fr]">
+          <PdfAnonymizer />
+          <div className="space-y-5">
+            <Card title="Проверка в 3 шага" icon={<CheckCircle2 className="h-5 w-5 text-emerald-300" />}>
+              <ol className="space-y-3 text-sm text-slate-300">
+                <li><span className="font-medium text-white">1.</span> Загрузите PDF или перетащите его в область слева.</li>
+                <li><span className="font-medium text-white">2.</span> Проверьте подсказки по найденным сущностям.</li>
+                <li><span className="font-medium text-white">3.</span> Скачайте обезличенный текст или скопируйте его.</li>
+              </ol>
+            </Card>
+            <Card title="Поддержка форматов" icon={<Layers className="h-5 w-5 text-sky-300" />}>
+              <p className="text-sm text-slate-300">
+                Помимо PDF, сервис работает с DOCX и TXT (через копирование текста). В ближайшем обновлении — автоматическая очистка сканов через OCR.
+              </p>
+            </Card>
+            <Card title="Соответствие нормам" icon={<Lock className="h-5 w-5 text-purple-300" />}>
+              <p className="text-sm text-slate-300">
+                Процесс соответствует требованиям 152-ФЗ и рекомендациям Роскомнадзора. Логи действий доступны администраторам.
+              </p>
+            </Card>
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-function SectionTitle({ eyebrow, title, subtitle }: { eyebrow: string; title: string; subtitle?: string }) {
+function PdfAnonymizer() {
+  const [file, setFile] = useState<File | null>(null)
+  const [rawText, setRawText] = useState<string>('')
+  const [result, setResult] = useState<AnonymizationResult | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleReset = () => {
+    setFile(null)
+    setRawText('')
+    setResult(null)
+    setError(null)
+  }
+
+  const handleFile = useCallback(async (selected: File) => {
+    if (!selected) return
+    if (selected.type !== 'application/pdf') {
+      setError('Поддерживаются только PDF-файлы.')
+      return
+    }
+    if (selected.size > 15 * 1024 * 1024) {
+      setError('Размер файла не должен превышать 15 МБ.')
+      return
+    }
+
+    setError(null)
+    setLoading(true)
+    setFile(selected)
+
+    try {
+      const text = await extractTextFromPdf(selected)
+      setRawText(text)
+      const anonymized = anonymizeText(text)
+      setResult(anonymized)
+    } catch (err) {
+      console.error(err)
+      setError('Не удалось прочитать документ. Попробуйте другой файл.')
+      setFile(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const onDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault()
+    if (event.dataTransfer.files?.[0]) {
+      void handleFile(event.dataTransfer.files[0])
+    }
+  }
+
+  const downloadAnonymized = () => {
+    if (!result) return
+    const blob = new Blob([result.text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = file ? `${file.name.replace(/\.pdf$/i, '')}_anon.txt` : 'anonymized.txt'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const hasContent = Boolean(rawText)
+
   return (
-    <div className="text-center">
-      <div className="text-xs uppercase tracking-widest text-red-400/90">{eyebrow}</div>
-      <h2 className="mt-2 text-3xl md:text-4xl font-semibold">{title}</h2>
-      {subtitle && <p className="mt-2 text-neutral-300">{subtitle}</p>}
+    <div className="space-y-6">
+      <label
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={onDrop}
+        className="flex min-h-[260px] cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-emerald-400/60 bg-emerald-500/5 p-8 text-center transition hover:border-emerald-300 hover:bg-emerald-500/10"
+      >
+        <input
+          type="file"
+          accept="application/pdf"
+          className="hidden"
+          onChange={(event) => {
+            const selected = event.target.files?.[0]
+            if (selected) {
+              void handleFile(selected)
+            }
+          }}
+        />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/15">
+          <UploadCloud className="h-6 w-6 text-emerald-300" />
+        </div>
+        <div>
+          <p className="text-base font-medium text-white">Перетащите PDF или нажмите для выбора файла</p>
+          <p className="mt-2 text-xs text-emerald-200">Обработка проходит локально. Файл не покидает ваш браузер.</p>
+        </div>
+        {file && (
+          <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-slate-950/60 px-4 py-2 text-sm text-emerald-100">
+            {file.name} • {(file.size / 1024 / 1024).toFixed(2)} МБ
+          </div>
+        )}
+        {loading && (
+          <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/60 px-4 py-2 text-xs text-slate-200">
+            <Loader2 className="h-4 w-4 animate-spin" /> Извлечение текста...
+          </div>
+        )}
+      </label>
+      {error && <div className="rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>}
+      <div className="grid gap-4 rounded-3xl border border-white/10 bg-slate-950/70 p-6 md:grid-cols-2">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white">Исходный текст</h3>
+            {hasContent && (
+              <button onClick={handleReset} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-3 py-1 text-xs text-slate-200 transition hover:border-red-400/60 hover:text-white">
+                <Trash2 className="h-3.5 w-3.5" /> Очистить
+              </button>
+            )}
+          </div>
+          <textarea
+            value={rawText}
+            onChange={(event) => {
+              const text = event.target.value
+              setRawText(text)
+              setResult(anonymizeText(text))
+              setFile(null)
+              setError(null)
+            }}
+            placeholder="Здесь появится текст из PDF. Можно вставить текст вручную."
+            className="mt-3 h-56 w-full resize-none rounded-2xl border border-white/5 bg-slate-950/60 p-3 text-sm text-slate-100 focus:border-emerald-400/40 focus:outline-none"
+          />
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white">Обезличенная версия</h3>
+            {result && result.text && (
+              <button
+                onClick={downloadAnonymized}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-3 py-1 text-xs font-medium text-slate-950 transition hover:bg-emerald-400"
+              >
+                <Download className="h-3.5 w-3.5" /> Скачать txt
+              </button>
+            )}
+          </div>
+          <textarea
+            value={result?.text ?? ''}
+            readOnly
+            className="mt-3 h-56 w-full resize-none rounded-2xl border border-white/5 bg-slate-950/60 p-3 text-sm text-emerald-100"
+          />
+        </div>
+      </div>
+      <AnonymizationStats stats={result?.stats ?? []} />
     </div>
   )
 }
 
-function PricingCard({ data }: { data: any }) {
+function AnonymizationStats({ stats }: { stats: Stat[] }) {
+  const total = useMemo(() => stats.reduce((sum, item) => sum + item.count, 0), [stats])
+
+  if (!stats.length) {
+    return (
+      <div className="rounded-3xl border border-dashed border-white/10 bg-slate-950/40 p-6 text-sm text-slate-400">
+        После обработки здесь появится статистика по найденным персональным данным.
+      </div>
+    )
+  }
+
   return (
-    <motion.div initial={{opacity:0,y:12}} whileInView={{opacity:1,y:0}} viewport={{once:true}} transition={{duration:0.5}} whileHover={{y:-6}} className={"relative rounded-3xl p-6 ring-1 ring-white/10 bg-neutral-900/70 backdrop-blur-xl shadow-xl overflow-hidden" + (data.popular ? " outline outline-1 outline-red-500/40" : "")}>
-      {data.popular && (<div className="absolute right-4 top-4 text-[10px] uppercase tracking-widest bg-red-500 text-white px-2 py-1 rounded-full shadow">Рекомендуем</div>)}
-      <div className="text-sm text-neutral-300">{data.badge}</div>
-      <h3 className="mt-1 text-2xl font-semibold">{data.name}</h3>
-      <div className="mt-3 text-sm space-y-1">
-        <div>{data.oneTime}</div>
-        <div>{data.subscription}</div>
+    <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-950/60 p-6">
+      <div className="flex items-center justify-between text-sm text-slate-300">
+        <span>Найдено сущностей</span>
+        <span className="font-semibold text-white">{total}</span>
       </div>
-      <ul className="mt-4 space-y-2 text-sm text-neutral-300">
-        {data.features.map((f:string,i:number)=>(<li key={i} className="flex gap-2 items-start"><Check className="w-4 h-4 mt-0.5 text-red-400" /> {f}</li>))}
-      </ul>
-      <div className="mt-5 flex gap-2">
-        <a href={CONTACTS.emailHref} className="flex-1 inline-flex justify-center items-center px-4 py-2 rounded-xl bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition">{data.cta}</a>
-        <a href={CONTACTS.phoneHref} className="inline-flex items-center px-3 py-2 rounded-xl ring-1 ring-white/15 hover:bg-white/5 transition"><Phone className="w-4 h-4 mr-1" />Позвонить</a>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {stats.map((item) => (
+          <div key={item.label} className="rounded-2xl border border-white/5 bg-slate-950/60 p-4">
+            <div className="text-xs uppercase tracking-wide text-emerald-200">{item.label}</div>
+            <div className="mt-2 text-2xl font-semibold text-white">{item.count}</div>
+          </div>
+        ))}
       </div>
-    </motion.div>
+    </div>
   )
 }
 
-function SpecialOffer({ onOpen }: { onOpen: ()=>void }) {
+function FeatureSection() {
   return (
-    <section id="offer" className="relative z-10 py-20">
+    <section id="features" className="relative border-t border-white/10 bg-slate-950/80 py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="rounded-3xl bg-gradient-to-r from-red-600/20 via-red-500/10 to-red-400/20 ring-1 ring-red-500/30 p-8 md:p-10 shadow-2xl overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            <div className="md:col-span-2">
-              <h3 className="text-2xl md:text-3xl font-semibold">Специальное предложение</h3>
-              <p className="mt-2 text-neutral-100">Заключите договор до 30 сентября и получите <b>14 дней бесплатного теста</b> и <b>персональный onboarding</b> для вашей команды.</p>
-            </div>
-            <div className="flex md:justify-end gap-3">
-              <button onClick={onOpen} className="inline-flex items-center px-4 py-2 rounded-xl bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition">Забронировать демо <ArrowRight className="w-4 h-4 ml-2" /></button>
-              <a href={CONTACTS.emailHref} className="inline-flex items-center px-4 py-2 rounded-xl ring-1 ring-white/15 hover:bg-white/5 transition"><Mail className="w-4 h-4 mr-2" /> Написать</a>
-            </div>
-          </div>
+        <SectionTitle
+          eyebrow="Возможности"
+          title="Инструменты для юридических отделов и консалтинга"
+          subtitle="От быстрой анонимизации до контроля доступа и совместной работы."
+        />
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="rounded-3xl border border-white/10 bg-slate-950/50 p-6 shadow-lg"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">{feature.icon}</div>
+              <h3 className="mt-4 text-lg font-semibold text-white">{feature.title}</h3>
+              <p className="mt-2 text-sm text-slate-300">{feature.description}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   )
 }
 
-function Contacts({ onOpen }: { onOpen: ()=>void }) {
+function WorkflowSection() {
   return (
-    <section id="contacts" className="relative z-10 py-20">
+    <section id="workflow" className="relative border-t border-white/10 bg-gradient-to-b from-slate-950/80 to-slate-950 py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <SectionTitle eyebrow="Контакты" title="Свяжитесь с нами" subtitle="Ответим в течение рабочего дня" />
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <div className="rounded-3xl p-6 bg-neutral-900/70 ring-1 ring-white/10 backdrop-blur-xl">
-            <div className="space-y-3 text-neutral-300">
-              <div className="flex items-center gap-3"><Phone className="w-5 h-5 text-red-400"/><a className="hover:text-white" href={CONTACTS.phoneHref}>{CONTACTS.phone}</a></div>
-              <div className="flex items-center gap-3"><Mail className="w-5 h-5 text-red-400"/><a className="hover:text-white" href={CONTACTS.emailHref}>{CONTACTS.email}</a></div>
+        <SectionTitle eyebrow="Как это работает" title="Весь процесс занимает меньше 3 минут" />
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          {WORKFLOW.map((step, index) => (
+            <div key={step.title} className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950/60 p-6">
+              <div className="absolute right-6 top-6 text-3xl font-semibold text-white/10">0{index + 1}</div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-200">
+                {step.icon}
+              </div>
+              <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
+              <p className="mt-2 text-sm text-slate-300">{step.description}</p>
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button onClick={onOpen} className="inline-flex items-center px-4 py-2 rounded-xl bg-red-500 hover:bg-red-400 text-white font-medium shadow-lg shadow-red-500/20 transition">Оставить заявку <ArrowRight className="w-4 h-4 ml-2" /></button>
-              <a href="#pricing" className="inline-flex items-center px-4 py-2 rounded-xl ring-1 ring-white/15 hover:bg-white/5 transition">К тарифам</a>
-            </div>
-            <div className="mt-6 text-sm text-neutral-400">С уважением,<br/><span className="text-neutral-200">Гончаров Игорь</span>, Коммерческий директор ООО «ГИАТЕРРА»</div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function FaqSection() {
+  return (
+    <section id="faq" className="relative border-t border-white/10 bg-slate-950/80 py-20">
+      <div className="mx-auto max-w-4xl px-4">
+        <SectionTitle eyebrow="FAQ" title="Частые вопросы" />
+        <div className="mt-10 space-y-4">
+          {FAQ.map((item) => (
+            <details key={item.question} className="group rounded-3xl border border-white/10 bg-slate-950/60 p-6">
+              <summary className="flex cursor-pointer items-center justify-between text-left text-sm font-medium text-white">
+                <span>{item.question}</span>
+                <HelpCircle className="h-5 w-5 text-emerald-300 transition group-open:rotate-45" />
+              </summary>
+              <p className="mt-4 text-sm text-slate-300">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ContactSection() {
+  return (
+    <section id="contacts" className="relative border-t border-white/10 bg-slate-950 py-20">
+      <div className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-slate-950/80 p-10 shadow-2xl">
+        <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-xl">
+            <SectionTitle eyebrow="Подключение" title="Получите доступ к демо и тарифам" />
+            <p className="mt-4 text-sm text-slate-300">
+              Оставьте контакты — наша команда поможет внедрить сервис в вашу практику, перенести шаблоны и настроить права доступа.
+            </p>
           </div>
-          <div className="rounded-3xl p-6 bg-neutral-900/70 ring-1 ring-white/10 backdrop-blur-xl">
-            <h4 className="text-lg font-semibold">Дальнейшие шаги</h4>
-            <ol className="mt-3 space-y-2 list-decimal list-inside text-sm text-neutral-300">
-              <li>Ответьте на письмо или оставьте заявку через форму.</li>
-              <li>Проведём демо и согласуем список модулей/доступов.</li>
-              <li>Выберем тариф и подготовим договор.</li>
-            </ol>
-            <form onSubmit={(e)=>{e.preventDefault(); window.location.href = CONTACTS.emailHref;}} className="mt-6 space-y-3">
-              <input required placeholder="Имя и компания" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400" />
-              <input required type="email" placeholder="Ваш email" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400" />
-              <textarea placeholder="Кратко о задаче" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400 min-h-[96px]" />
-              <button className="w-full inline-flex justify-center items-center px-4 py-2 rounded-xl bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition">Отправить заявку</button>
-            </form>
+          <div className="space-y-4 text-sm text-slate-200">
+            <a
+              href="mailto:lexguard@example.com"
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 transition hover:border-emerald-400/40 hover:text-white"
+            >
+              <Mail className="h-4 w-4 text-emerald-300" /> lexguard@example.com
+            </a>
+            <a
+              href="tel:+79273333329"
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 transition hover:border-emerald-400/40 hover:text-white"
+            >
+              <Phone className="h-4 w-4 text-emerald-300" /> +7 (927) 333-33-29
+            </a>
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-slate-300">
+              <BookOpen className="h-4 w-4 text-emerald-300" />
+              Методология обезличивания соответствует ГОСТ Р 57787-2017
+            </div>
           </div>
         </div>
       </div>
@@ -224,52 +575,106 @@ function Contacts({ onOpen }: { onOpen: ()=>void }) {
 
 function Footer() {
   return (
-    <footer className="relative z-10 mt-8 border-t border-white/10">
-      <div className="mx-auto max-w-6xl px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <img src={LOGO_SRC} alt="Логотип" className="h-8 w-auto object-contain" onError={(e)=>{(e.currentTarget as HTMLImageElement).style.display='none'}} />
-          <span className="text-sm text-neutral-300">ООО «ГИАТЕРРА»</span>
+    <footer className="relative border-t border-white/5 bg-slate-950/90 py-10 text-sm text-slate-400">
+      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-6 px-4 md:flex-row md:items-center">
+        <p>© {new Date().getFullYear()} LexGuard. Все права защищены.</p>
+        <div className="flex flex-wrap items-center gap-4">
+          <a href="#" className="transition hover:text-white">
+            Политика обработки данных
+          </a>
+          <a href="#" className="transition hover:text-white">
+            Пользовательское соглашение
+          </a>
         </div>
-        <p className="text-sm text-neutral-400 max-w-2xl text-center md:text-right"><b>P.S.</b> По статистике, клиенты окупают подписку уже через <b>2–3 месяца</b> работы с сервисом.</p>
       </div>
     </footer>
   )
 }
 
-function LeadModal({ onClose }: { onClose: ()=>void }) {
+function BackgroundDecor() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true">
-      <motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} className="w-full max-w-lg rounded-2xl bg-neutral-900 ring-1 ring-white/10 p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-xl font-semibold">Заявка на демо</h3>
-            <p className="text-sm text-neutral-300 mt-1">Оставьте контакты — отправим письмо и согласуем время.</p>
-          </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white">✕</button>
-        </div>
-        <form onSubmit={(e)=>{e.preventDefault(); window.location.href = CONTACTS.emailHref;}} className="mt-5 space-y-3">
-          <input required placeholder="Имя" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          <input required type="email" placeholder="Email" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          <input placeholder="Телефон" className="w-full px-4 py-2 rounded-xl bg-neutral-800/80 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-red-400" />
-          <button className="w-full inline-flex justify-center items-center px-4 py-2 rounded-xl bg-white text-neutral-900 font-medium hover:bg-neutral-200 transition">Отправить</button>
-          <div className="text-xs text-neutral-500 text-center">Нажимая «Отправить», вы даёте согласие на обработку данных для связи по заявке.</div>
-        </form>
-      </motion.div>
+    <div className="pointer-events-none fixed inset-0 -z-10">
+      <div className="absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="absolute bottom-0 right-0 h-[28rem] w-[28rem] translate-x-1/3 translate-y-1/3 rounded-full bg-sky-500/10 blur-3xl" />
+      <div className="absolute top-1/3 left-0 h-72 w-72 -translate-x-1/3 rounded-full bg-purple-500/10 blur-3xl" />
     </div>
   )
 }
 
-function BackgroundDecor() {
+function SectionTitle({ eyebrow, title, subtitle }: { eyebrow?: string; title: string; subtitle?: string }) {
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
-      <svg className="absolute inset-0 h-full w-full opacity-[0.06]" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="white" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-      </svg>
+    <div className="max-w-3xl">
+      {eyebrow && <div className="text-xs uppercase tracking-[0.25em] text-emerald-300">{eyebrow}</div>}
+      <h2 className="mt-2 text-3xl font-semibold text-white md:text-4xl">{title}</h2>
+      {subtitle && <p className="mt-3 text-sm text-slate-300">{subtitle}</p>}
     </div>
   )
+}
+
+function Card({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-6">
+      <div className="flex items-center gap-3 text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5">{icon}</div>
+        <h3 className="text-base font-semibold">{title}</h3>
+      </div>
+      <div className="mt-4">{children}</div>
+    </div>
+  )
+}
+
+async function extractTextFromPdf(file: File) {
+  const arrayBuffer = await file.arrayBuffer()
+  const pdfjsLib = (await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs')) as any
+  if (pdfjsLib.GlobalWorkerOptions) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+  }
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  let text = ''
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+    const page = await pdf.getPage(pageNumber)
+    const content = await page.getTextContent()
+    const pageText = content.items
+      .map((item: any) => ('str' in item ? item.str : ''))
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+    text += pageText + '\n\n'
+  }
+  return text.trim()
+}
+
+function anonymizeText(text: string): AnonymizationResult {
+  if (!text) {
+    return { text: '', stats: [] }
+  }
+
+  const patterns: { label: string; regex: RegExp; replacement: string }[] = [
+    { label: 'ФИО', regex: /\b[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\s[А-ЯЁ][а-яё]+\b/g, replacement: '[ФИО]' },
+    { label: 'ФИО (инициалы)', regex: /\b[А-ЯЁ][а-яё]+\s[А-ЯЁ]\.\s?[А-ЯЁ]\.\b/g, replacement: '[ФИО]' },
+    { label: 'Латиница', regex: /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/g, replacement: '[NAME]' },
+    { label: 'Телефоны', regex: /\+?\d[\d\s().-]{7,}\d/g, replacement: '[Телефон]' },
+    { label: 'E-mail', regex: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, replacement: '[Email]' },
+    { label: 'Паспорт', regex: /\b\d{4}\s?\d{6}\b/g, replacement: '[Паспорт]' },
+    { label: 'ИНН/СНИЛС', regex: /\b\d{3}-\d{3}-\d{3}\s?\d{2}\b/g, replacement: '[ИНН]' },
+    { label: 'Карты', regex: /\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/g, replacement: '[Карта]' },
+    { label: 'Даты', regex: /\b\d{2}[./-]\d{2}[./-]\d{4}\b/g, replacement: '[Дата]' },
+    { label: 'Номера дел', regex: /\b\d{2}-\d{2}-\d{6}\b/g, replacement: '[Дело]' },
+  ]
+
+  let anonymized = text
+  const stats: Stat[] = []
+
+  for (const pattern of patterns) {
+    const matches = anonymized.match(pattern.regex)
+    anonymized = anonymized.replace(pattern.regex, pattern.replacement)
+    stats.push({ label: pattern.label, count: matches?.length ?? 0 })
+  }
+
+  anonymized = anonymized.replace(/\n{3,}/g, '\n\n')
+
+  return {
+    text: anonymized,
+    stats: stats.filter((item) => item.count > 0),
+  }
 }
